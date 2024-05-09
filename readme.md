@@ -1,6 +1,6 @@
-# txyXAI
+# txyvis
 
-Visualiation for spatio-temporal data with matplotlib and numpy / cv2 backends
+Visualiation for spatio-temporal data with matplotlib and numpy backends
 
 ## Overview
 
