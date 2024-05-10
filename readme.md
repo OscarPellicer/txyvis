@@ -35,6 +35,10 @@ from txyvis import plot_maps
 plot_maps(...)
 ```
 
+For examples of usage, you can look at two repositories that use it:
+ - [xarrayvideo](https://github.com/OscarPellicer/xarrayvideo): A repo to save multichannel data from xarray datasets as videos to save up massive amounts of space (e.g. >20x compression). And [this notebook](https://github.com/OscarPellicer/xarrayvideo/blob/main/example.ipynb) in particular.
+ - [txyXAI](https://github.com/DeepExtremes/txyXAI): A repo for training models and doing eXplainable Artificial intelligence (XAI) for spatio-temporal data.
+
 ## Main functions
 
 ### `plot_maps` function signature:
