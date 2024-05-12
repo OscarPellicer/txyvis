@@ -6,4 +6,6 @@ setup(
     packages=find_packages(),
     author='Oscar J. Pellicer-Valero',
     install_requires=['scipy', 'numpy', 'matplotlib'],
+    package_data={'': ['OpenSans_Condensed-Regular.ttf']},
+    include_package_data=True,
 )
