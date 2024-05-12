@@ -2,6 +2,14 @@
 
 Visualiation for spatio-temporal data with matplotlib and numpy backends
 
+## Installation
+
+Installation requires `scipy, numpy, matplotlib`
+
+```{Bash}
+pip install git+https://github.com/OscarPellicer/txyvis.git
+```
+
 ## Overview
 
 Custom visualization of highly-dimensional data (specially multichannel spatio-temporal). Here are some example plots:
@@ -19,14 +27,6 @@ This is one last example of a very big image where `stack_every` was set to 73, 
 ![Example of visualization.py](readme_media/big.jpg)
 
 Here are some notable functions in this library:
-
-## Installation
-
-Installation requires `scipy, numpy, matplotlib`
-
-```{Bash}
-pip install git+https://github.com/OscarPellicer/txyvis.git
-```
 
 ## Usage
 
