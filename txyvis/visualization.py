@@ -83,8 +83,7 @@ def plot_dem(dem: np.ndarray, lon: npt.ArrayLike, lat: npt.ArrayLike,
         # in the rgb colors of the shaded surface calculated from "shade".
         rgb = ls.shade(z, cmap=cm.gist_earth, vert_exag=0.1, blend_mode='soft')
     
-    #https://stackoverflow.com/questions/30223161/matplotlib-mplot3d-how-to-increase
-    #-the-size-of-an-axis-stretch-in-a-3d-plo
+    #https://stackoverflow.com/questions/30223161/matplotlib-mplot3d-how-to-increase-the-size-of-an-axis-stretch-in-a-3d-plot
     ax.set_box_aspect(aspect = (1,1,1/30*elevation_factor))
     
     #Plot
@@ -105,6 +104,7 @@ def normalize(img:np.ndarray,
               #are the minimum and maximum values. If using percentile, they are the lowe
               #n% and the top n% for the normalization
              ):
+    import torch
     allowed_methods= ['minmax', 'percentile']
     assert method in allowed_methods, f'{method=} not in {allowed_methods}'
 
@@ -118,7 +118,7 @@ def normalize(img:np.ndarray,
             imin, imax= np.min(img2[valid_idx]), np.max(img2[valid_idx])
     elif method == 'percentile':
         limits= (2, 98) if limits is None else limits
-        imin, imax= np.percentile(img, torch.Tensor(perc).type(img.dtype))
+        imin, imax= np.percentile(img, torch.Tensor(limits).type(img.dtype))
         
     if center:
         imin= min(imin, -imax)
@@ -184,6 +184,7 @@ def plot_colorbar(imin, imax, cmap, ax=None, label=None, orientation='horizontal
     if labelsize is not None: cb1.ax.tick_params(labelsize=labelsize)
 
 def percentile_mask(img, perc=[1-0.98, 0.98]):
+    import torch
     p1, p2= torch.quantile(img, torch.Tensor(perc).type(img.dtype))
     img_mask= torch.zeros_like(img).int()
     img_mask[img<p1]= -1
@@ -218,6 +219,7 @@ def plot_maps(images:list, #Image with shape (t, {1,3}, h, w)
               transpose:bool=False, #If True, time is set along the y axis (by default, it is along the x-xis)
               stack_every:Union[int,bool]=False, #If True, stack the image vertically every `stack_every` images
               max_text_width:int=50, #Maximum text width (in chars). Breaks text labels if surpassed
+              colorbar_labels: Optional[List[str]] = None, # List of names for each unique colorbar
              ):
     ''' 
         Images must have shape (t, {1,3}, h, w) 
@@ -403,6 +405,14 @@ def plot_maps(images:list, #Image with shape (t, {1,3}, h, w)
     #If true at pos 0: all_zeros, 1: nans, 2: infs
     bad_values= np.any(np.array(bad_values), axis=0)
         
+    # Check colorbar labels
+    use_colorbar_labels = False
+    if colorbar_labels is not None:
+        if len(colorbar_labels) == len(cbar_infos):
+            use_colorbar_labels = True
+        else:
+            print(f"Warning: Length of colorbar_labels ({len(colorbar_labels)}) does not match the number of unique colorbars ({len(cbar_infos)}). Labels will not be shown.")
+            
     #Plot images    
     if colorbar_position == 'horizontal':
         nax, nay= 1+len(cbar_infos), 1
@@ -461,9 +471,20 @@ def plot_maps(images:list, #Image with shape (t, {1,3}, h, w)
     
     #Add colorbars
     for i, cbar_info in enumerate(cbar_infos[::-1]): 
-        plot_colorbar(*cbar_info, ax=axes[1+i], orientation=colorbar_position, 
-                      labelsize=matplotlib_backend_kwargs['text_size'])
+        ax_cbar = axes[1+i] if hasattr(axes, '__len__') else axes # Handle single colorbar case
+        plot_colorbar(*cbar_info, ax=ax_cbar, orientation=colorbar_position, 
+                      labelsize=matplotlib_backend_kwargs['text_size'], show=False) # Pass show=False
         
+        # Add colorbar label if requested and valid
+        if use_colorbar_labels:
+            label = colorbar_labels[-(i+1)] # Get label corresponding to this cbar_info
+            # Add padding based on text size
+            pad = matplotlib_backend_kwargs['text_size'] * 1 if matplotlib_backend_kwargs['text_size'] is not None else 10
+            if colorbar_position == 'horizontal':
+                ax_cbar.set_ylabel(label, fontsize=matplotlib_backend_kwargs['text_size'], pad=pad) # Appears left of horizontal colorbar
+            elif colorbar_position == 'vertical':
+                ax_cbar.set_title(label, fontsize=matplotlib_backend_kwargs['text_size'], pad=pad) # Appears on top of vertical colorbar with padding
+                
     fig.set_tight_layout(True)
     if show: plt.show(fig)
         
